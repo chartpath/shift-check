@@ -23,8 +23,8 @@ func (s *shift) UnmarshalJSON(j []byte) error {
 		return err
 	}
 	// fmt.Println(shiftSourceData)
-	s.Start, _ = strconv.ParseInt(shiftSourceData.Start, 10, 32)
-	s.End, _ = strconv.ParseInt(shiftSourceData.End, 10, 32)
+	s.Start, _ = strconv.ParseInt(shiftSourceData.Start, 10, 64)
+	s.End, _ = strconv.ParseInt(shiftSourceData.End, 10, 64)
 	return nil
 }
 

@@ -3,37 +3,51 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
 )
 
 type shift struct {
-	Start string
-	End   string
+	Start int64
+	End   int64
+}
+
+type shiftSource struct {
+	Start string // `json:"start"`
+	End   string // `json:"end"`
+}
+
+func (s *shift) UnmarshalJSON(j []byte) error {
+	var shiftSourceData shiftSource
+	err := json.Unmarshal(j, &shiftSourceData)
+	if err != nil {
+		return err
+	}
+	// fmt.Println(shiftSourceData)
+	s.Start, _ = strconv.ParseInt(shiftSourceData.Start, 10, 32)
+	s.End, _ = strconv.ParseInt(shiftSourceData.End, 10, 32)
+	return nil
 }
 
 func main() {
 	var userShifts []shift
-	// this would be better if the values were ints right off the bat
-	err := json.Unmarshal(userShiftData, &userShifts)
-	if err != nil {
-		fmt.Println("error:", err)
+	errUserShifts := json.Unmarshal(userShiftData, &userShifts)
+	if errUserShifts != nil {
+		fmt.Println("error:", errUserShifts)
 	}
 	// fmt.Printf("userShifts, %+v", userShifts)
 
 	var availableShifts []shift
-	// how to not reuse var names for error handling?
-	e := json.Unmarshal(availableShiftData, &availableShifts)
-	if e != nil {
-		fmt.Println("error:", e)
+	errAvailShifts := json.Unmarshal(availableShiftData, &availableShifts)
+	if errAvailShifts != nil {
+		fmt.Println("error:", errAvailShifts)
 	}
 	// fmt.Printf("availableShifts %+v", availableShifts)
 
-	// validShifts := make([]shift, len(availableShifts))
 	for _, shift := range availableShifts {
 		shiftIsValid := isValidShift(userShifts, shift)
 		// fmt.Println("shiftIsValid", shiftIsValid)
 		if shiftIsValid {
 			fmt.Println("shift is valid", shift)
-			// append(validShifts, shift)
 		} else {
 			fmt.Println("shift is invalid", shift)
 		}
@@ -42,17 +56,13 @@ func main() {
 }
 
 func isValidShift(u []shift, c shift) bool {
-	var exitingStarts []string
-	var existingEnds []string
+	var exitingStarts []int64
+	var existingEnds []int64
 	for _, shift := range u {
 		exitingStarts = append(exitingStarts, shift.Start)
 		existingEnds = append(existingEnds, shift.End)
 
-		// lexical comparison seems fine, but we could do real math instead
-		// probably want to check the date packages
-
-		// uStart, _ := strconv.ParseInt(shift.Start, 10, 32)
-		// uEnd, _ := strconv.ParseInt(shift.End, 10, 32)
+		// todo: probably want to check the date packages for helper functions
 	}
 
 	var startOk bool
@@ -78,7 +88,7 @@ func isValidShift(u []shift, c shift) bool {
 				endOk = true
 			}
 			for _, exEnd := range existingEnds {
-				if c.Start >= exEnd || c.Start == "0000" {
+				if c.Start >= exEnd || c.Start == 0 {
 					startOk = true
 				}
 			}
@@ -104,5 +114,6 @@ var availableShiftData = []byte(`[
 	{"start": "1800", "end": "2359"},
 	{"start": "0000", "end": "0600"},
 	{"start": "1200", "end": "2359"},
+	{"start": "1200", "end": "1800"},
 	{"start": "1200", "end": "1800"}
 ]`)

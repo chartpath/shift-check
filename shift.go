@@ -58,7 +58,7 @@ func main() {
 			unscheduledPeriods = append(unscheduledPeriods, nextPeriod)
 		}
 		if i == len(userShifts)-1 {
-			lastPeriod := shift{uShift.End, midnight.Add(-time.Second)}
+			lastPeriod := shift{uShift.End, midnight.Add(time.Minute * 1440)}
 			unscheduledPeriods = append(unscheduledPeriods, lastPeriod)
 		}
 	}
